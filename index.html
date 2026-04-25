@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uber Demand Forecasting — MIS 432 Portfolio</title>
+<style>
+  /* ============================================================
+     UBER BRAND PALETTE
+     Background: #000000 (black)
+     Accent:     #1FBAD6 (Uber cyan)
+     Text:       #FFFFFF (white)
+     Muted:      #A0A0A0 (secondary text)
+     Surface:    #111111 (cards / raised elements)
+     Border:     #222222 (subtle dividers)
+     ============================================================ */
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --black:   #000000;
+    --surface: #0A0A0A;
+    --card:    #111111;
+    --border:  #1E1E1E;
+    --cyan:    #1FBAD6;
+    --cyan-dim:#1FBAD620;
+    --white:   #FFFFFF;
+    --muted:   #9A9A9A;
+    --red:     #E84855;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- NAV BAR ---- */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .brand {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  nav .brand span { color: var(--cyan); }
+  nav .nav-links { display: flex; gap: 1.5rem; }
+  nav .nav-links a {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  nav .nav-links a:hover { color: var(--cyan); }
+
+  /* ---- HERO ---- */
+  .hero {
+    padding: 10rem 2rem 5rem;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  .hero .label {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    border: 1px solid var(--cyan);
+    padding: 0.3em 0.9em;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--cyan);
+  }
+  .hero .subtitle {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 620px;
+    line-height: 1.8;
+  }
+
+  /* ---- SECTIONS ---- */
+  .section {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    border-top: 1px solid var(--border);
+  }
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--cyan);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  .section h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.5rem;
+    line-height: 1.3;
+  }
+  .section p {
+    font-size: 0.95rem;
+    color: #D0D0D0;
+    margin-bottom: 1.2rem;
+    max-width: 720px;
+  }
+
+  /* ---- PLACEHOLDER BLOCKS ---- */
+  .placeholder {
+    background: var(--card);
+    border: 2px dashed #333;
+    border-radius: 6px;
+    padding: 2rem 2.5rem;
+    margin: 2rem 0;
+    position: relative;
+  }
+  .placeholder::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -0.65rem; left: 1.5rem;
+    background: var(--cyan);
+    color: var(--black);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2em 0.7em;
+    border-radius: 2px;
+  }
+  .placeholder p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-bottom: 0;
+  }
+
+  /* ---- MEMO BLOCK ---- */
+  .memo-block {
+    background: var(--card);
+    border-left: 3px solid var(--cyan);
+    border-radius: 0 6px 6px 0;
+    padding: 2rem 2.5rem;
+    margin: 2rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    color: #D0D0D0;
+  }
+
+  /* ---- CALLOUT ---- */
+  .callout {
+    background: var(--cyan-dim);
+    border: 1px solid rgba(31,186,214,0.25);
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+  }
+  .callout p {
+    color: var(--white);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+  footer span { color: var(--cyan); }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 640px) {
+    nav .nav-links { display: none; }
+    .hero { padding: 7rem 1.2rem 3rem; }
+    .section { padding: 3rem 1.2rem; }
+    .placeholder, .memo-block { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVIGATION BAR
+     ============================================================ -->
+<nav>
+  <div class="brand">
+    <span>MIS 432</span> &middot; AI in Business &middot; Western Washington University
+  </div>
+  <div class="nav-links">
+    <a href="#problem">Problem</a>
+    <a href="#model">Model</a>
+    <a href="#prediction">Prediction</a>
+    <a href="#stress">Stress Test</a>
+    <a href="#algorithm">Algorithm</a>
+    <a href="#breaks">Breaks</a>
+    <a href="#analysis">Analysis</a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="hero">
+  <div class="label">Portfolio Project</div>
+  <h1>Uber Demand Forecasting:<br>From Historical Data to <em>Driver Deployment</em></h1>
+  <p class="subtitle">
+    A complete demand forecasting pipeline — data simulation, model backtesting,
+    concert-night prediction, and an operations memo — built from scratch in Python.
+  </p>
+</header>
+
+<!-- ============================================================
+     SECTION 1 — THE BUSINESS PROBLEM
+     ============================================================ -->
+<section class="section" id="problem">
+  <div class="section-number">01</div>
+  <h2>The Business Problem</h2>
+  <p>
+    Every minute of every day, Uber has to answer one question before anything else
+    matters: <strong>how many people are going to want a ride, and where?</strong>
+    Get it right and drivers are waiting when riders open the app — pickups are fast,
+    riders are happy, drivers earn steadily, and the business works. Get it wrong and
+    everything breaks at once. Too few drivers means five-minute wait times stretch to
+    twenty, riders cancel and call a cab, and Uber loses revenue it can never recover.
+    Too many drivers means cars circling empty blocks burning gas and patience, drivers
+    earning nothing, and the best ones switching to Lyft by next week. Demand
+    forecasting isn't a feature of Uber's business — it <em>is</em> the business.
+    The algorithm that predicts how many rides are coming in the next hour is the
+    single most consequential piece of software the company runs, because every
+    pricing decision, every driver notification, and every surge multiplier flows
+    directly from that number.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 2 — THE DATA AND THE MODEL
+     ============================================================ -->
+<section class="section" id="model">
+  <div class="section-number">02</div>
+  <h2>The Data and the Model</h2>
+  <p>
+    I started by generating two years of historical Friday night Uber trip data (104
+    weeks) for the area around WWU's campus in Bellingham, Washington. The dataset
+    captures four real demand drivers that Uber's own models account for: a long-run
+    growth trend as Uber's market share expands, summer seasonality from tourism, a
+    school-year effect when 16,000 WWU students are in town, and the annual New Year's
+    Eve spike. I then split the data — training a linear regression model on the first
+    78 weeks and hiding the final 26 weeks as a blind backtest. The model predicted
+    those unseen Fridays with a Mean Absolute Error of roughly 27 trips, about 6.5% of
+    average demand — accurate enough to trust for operational planning.
+  </p>
+
+  <!-- ── Backtest chart ── -->
+  <div style="margin: 2rem 0;">
+    <img src="backtest_chart.png" alt="Friday Night Demand — Backtest Results showing actual vs predicted trips over 104 weeks" style="width:100%; border-radius:6px; border:1px solid var(--border);">
+    <p style="margin-top:1rem;">
+      The model's predictions (orange dashed line) tracked the general level of demand
+      through the backtest window, staying within the ±15% tolerance band for most weeks.
+      However, it missed the sharp spikes in November and late December — weeks where
+      actual trips jumped to 480, well above the model's flat prediction line. The model
+      captures trend and seasonality but smooths over the short-term volatility that
+      matters most on the busiest nights.
+    </p>
+  </div>
+
+  <div class="callout">
+    <p>
+      The dashed line is what the model predicted. The solid line is what actually
+      happened. The gap between them is the model's error — and the honest measure
+      of how much to trust it.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 3 — THE CONCERT NIGHT PREDICTION
+     ============================================================ -->
+<section class="section" id="prediction">
+  <div class="section-number">03</div>
+  <h2>The Concert Night Prediction</h2>
+  <p>
+    Here is the actual operations recommendation the model produced for the Death Cab
+    for Cutie, Sleater-Kinney, and ODESZA homecoming concert at WWU.
+  </p>
+
+  <!-- ── Concert night memo ── -->
+  <div class="memo-block">
+After stress-testing the forecast, we are expected to be significantly underprepared
+regarding available drivers. Even when assuming drivers will be able to complete 5
+trips an hour and with 60 drivers available at 10pm, we don't have enough.
+
+I recommend we make incentives for drivers both in Bellingham and surrounding areas
+to work downtown on Friday night in order to meet the demand. We need around
+170–190 drivers on the low end to meet demand at a reasonable pace.
+
+RECOMMENDATION SUMMARY:
+  Predicted demand:     ~580 trips (baseline) up to ~977 trips (high scenario)
+  Drivers needed:       170–196 (minimum viable to best estimate)
+  Surge pricing:        🔴 ACTIVATE — supply gap is too large at normal pricing
+  Pre-positioning:      Incentivize drivers from Mount Vernon, Skagit County,
+                        and surrounding areas to stage near WWU campus by 9:45 PM
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 4 — STRESS-TESTING THE FORECAST
+     ============================================================ -->
+<section class="section" id="stress">
+  <div class="section-number">04</div>
+  <h2>Stress-Testing the Forecast</h2>
+  <p>
+    Before sending that memo, I stress-tested the key assumptions to understand how
+    fragile the recommendation was.
+  </p>
+
+  <!-- ── Stress test results ── -->
+  <div style="margin: 2rem 0;">
+    <img src="Stress_test.png" alt="WWU Concert Forecast Stress-Test Simulator showing 977 predicted trips, 196 drivers needed, surge pricing activated" style="width:100%; border-radius:6px; border:1px solid var(--border);">
+    <p style="margin-top:1rem;">
+      The surge pricing recommendation stayed <strong>on for every scenario tested</strong> —
+      even with drivers completing 5 trips per hour and 60 drivers online at 10pm, demand
+      (977 trips in the high scenario) overwhelmed supply (300 trip capacity) by a 677-trip
+      shortfall. The recommendation to activate surge pricing is not fragile; it holds
+      under every plausible combination of assumptions. The question isn't <em>whether</em>
+      to surge — it's how aggressively to recruit additional drivers beforehand.
+    </p>
+  </div>
+
+  <p>
+    Stress-testing is what separates a number from a recommendation. Any model can
+    produce a point estimate — 580 trips, 194 drivers — but an operations manager
+    can't act on a single number without knowing how it breaks. By varying the
+    assumptions that matter most (the concert surge multiplier, the trips-per-driver
+    rate), we find out whether the recommendation flips under plausible conditions or
+    holds firm. A recommendation that survives stress-testing earns trust; one that
+    doesn't gets flagged with guardrails before it reaches a decision-maker.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 5 — WHEN THE ALGORITHM DECIDES
+     ============================================================ -->
+<section class="section" id="algorithm">
+  <div class="section-number">05</div>
+  <h2>When the Algorithm Decides</h2>
+  <p>
+    In production, Uber's system doesn't wait for a human to read the memo. The
+    forecast feeds directly into the surge pricing algorithm, which sets the
+    multiplier automatically — no review, no approval, no delay. When the model is
+    right, this is a superpower: prices adjust in real time, drivers are summoned to
+    exactly the right intersection, and thousands of riders get home safely after the
+    concert. But when the model is wrong — say an earthquake shuts down roads and
+    the model still thinks it's a normal Friday — that same automation becomes a
+    liability. Surge prices spike on stranded people, drivers are routed into
+    impassable streets, and the algorithm optimizes confidently for a world that no
+    longer exists. The speed that makes automated decisions powerful is the same
+    speed that makes them dangerous.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 6 — WHEN THE MODEL BREAKS
+     ============================================================ -->
+<section class="section" id="breaks">
+  <div class="section-number">06</div>
+  <h2>When the Model Breaks</h2>
+  <p>
+    Six weeks after the concert, three things happen at once: WWU's spring enrollment
+    drops 12% as students transfer or take gap quarters, a new apartment complex opens
+    in the Cordata neighborhood (shifting where riders live), and Lyft launches in
+    Bellingham with first-ride promos. The model has never seen any of this. It was
+    trained on a world where enrollment grew, Cordata was empty, and Uber had no
+    local competitor — so it keeps predicting as if that world still exists.
+    Drivers get dispatched to the wrong neighborhoods and earn less per hour.
+    Riders near Cordata wait longer because the model doesn't know they're there,
+    and some quietly switch to Lyft. This is distribution shift: the real world moved
+    and nobody told the model. Nobody told the drivers or riders why things got worse,
+    either — they just experienced it.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 7 — MY ANALYSIS
+     ============================================================ -->
+<section class="section" id="analysis">
+  <div class="section-number">07</div>
+  <h2>My Analysis</h2>
+
+  <!-- ── Student reflection ── -->
+  <div style="background:var(--card); border-radius:6px; padding:2rem 2.5rem; margin:1.5rem 0; border-left:3px solid var(--cyan);">
+    <p style="color:#D0D0D0; font-size:0.95rem; line-height:1.85; margin-bottom:0;">
+      The data we use to initially train the model in the beginning shapes the predictions
+      made by the model in the end. All the trends and spikes in activity found in the
+      initial first two years led to both accurate predictions as well as miscalculations.
+      This was especially apparent when trying to predict a concert night. The model heavily
+      underestimated the expected amount of traffic and could have led to a major problem if
+      human intervention didn't take place. I also saw the limits of the model when major
+      changes to the environment occur — such as the appearance of a competitor — and the
+      model slowly devolves, making less and less accurate predictions. Overall, if I were
+      to build a similar system for a business in Bellingham, I would add multiple triggers
+      that lead to human review to prevent the model from fueling misinformed decisions.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <span>MIS 432</span> &middot; AI in Business &middot; Western Washington University &middot; 2025
+</footer>
+
+</body>
+</html>
